@@ -35,7 +35,7 @@ contract BaseERC20 is ERC20, ERC20Burnable, Ownable {
         address sender,
         address recipient,
         uint256 amount
-    ) internal virtual override {
+    ) internal override {
         uint256 tax_ = (amount / 100) * tax; // 5% tax
 
         super._transfer(sender, recipient, amount - tax_);
