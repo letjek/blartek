@@ -7,9 +7,10 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-contract BaseITONative is Ownable, ReentrancyGuard {
+contract BaseITOERC20 is Ownable, ReentrancyGuard {
     using SafeMath for uint256;
 
+    IERC20 public baseToken;
     IERC20 public token;
     IERC20 public specialToken;
     address public currency;
@@ -54,7 +55,8 @@ contract BaseITONative is Ownable, ReentrancyGuard {
     //     FAILED
     // }
 
-    struct DataNative {
+    struct DataERC20 {
+        address baseToken;
         address token;
         address specialToken;
         address currency;
@@ -79,8 +81,9 @@ contract BaseITONative is Ownable, ReentrancyGuard {
         _;
     }
 
-    constructor(DataNative memory data) Ownable(msg.sender) {
+    constructor(DataERC20 memory data) Ownable(msg.sender) {
         require(data.hardCap.mul(25).div(100) < data.softCap && data.hardCap > data.softCap, "Hardcap must greater than softcap 25%");
+        baseToken = IERC20(data.baseToken);
         token = IERC20(data.token);
         specialToken = IERC20(data.specialToken);
         currency = data.currency;
@@ -147,31 +150,33 @@ contract BaseITONative is Ownable, ReentrancyGuard {
         return amount_.mul(presaleRate);
     }
 
-    function buy() external payable nonReentrant {
+    function buy(uint256 amount) external nonReentrant {
         if (isWhitelist) {
             require(whitelisted[msg.sender] || (specialToken != IERC20(address(0)) && specialToken.balanceOf(msg.sender) > 0), "Not whitelisted");
         }
         require(block.timestamp != 0, "Raising period not set");
         require(block.timestamp >= startTime, "Raising period not started yet");
         require(block.timestamp < endTime, "Raising period already end");
-        require(msg.value > 0, "Please input value");
+        require(amount > 0, "Please input value");
         require(getHardFilled() == false, "Raise already fullfilled");
 
         UserInfo memory userInfo = usersTokenBought[msg.sender];
 
-        require(userInfo.totalSpent.add(msg.value) >= minBuy, "Less than min buy");
-        require(userInfo.totalSpent.add(msg.value) <= maxBuy, "More than max buy");
+        require(userInfo.totalSpent.add(amount) >= minBuy, "Less than min buy");
+        require(userInfo.totalSpent.add(amount) <= maxBuy, "More than max buy");
         require(
-            msg.value + alreadyRaised <= hardCap,
+            amount + alreadyRaised <= hardCap,
             "Amount buy more than total hardcap"
         );
 
-        uint256 tokenSellAmount = getSellTokenAmount(msg.value);
+        baseToken.approve(address(this), amount);
+        baseToken.transferFrom(msg.sender, address(this), amount);
+        uint256 tokenSellAmount = getSellTokenAmount(amount);
         userInfo.totalToken = userInfo.totalToken.add(tokenSellAmount);
-        userInfo.totalSpent = userInfo.totalSpent.add(msg.value);
+        userInfo.totalSpent = userInfo.totalSpent.add(amount);
         usersTokenBought[msg.sender] = userInfo;
 
-        alreadyRaised = alreadyRaised.add(msg.value);
+        alreadyRaised = alreadyRaised.add(amount);
     }
 
     function claimFailed() external nonReentrant {
@@ -182,7 +187,9 @@ contract BaseITONative is Ownable, ReentrancyGuard {
         uint256 userSpecialSpent = usersTokenBought[msg.sender].totalSpecialSpent;
         require(userSpent > 0, "Already claimed");
 
-        payable(msg.sender).transfer(userSpent.add(userSpecialSpent));
+        baseToken.transferFrom(address(this), msg.sender, userSpent.add(userSpecialSpent));
+
+        // payable(msg.sender).transfer(userSpent.add(userSpecialSpent));
 
         delete usersTokenBought[msg.sender];
     }
@@ -204,30 +211,32 @@ contract BaseITONative is Ownable, ReentrancyGuard {
         delete usersTokenBought[msg.sender];
     }
 
-    function specialBuy() external payable nonReentrant {
+    function specialBuy(uint256 amount) external nonReentrant {
         require((specialToken != IERC20(address(0)) && specialToken.balanceOf(msg.sender) > 0), "Not whitelisted");
         require(specialStartTime != 0, "Raising special period not set");
         require(block.timestamp < startTime, "Special period has ended");
-        require(msg.value > 0, "Please input value");
+        require(amount > 0, "Please input value");
         require(getHardFilled() == false, "Raise already fullfilled");
 
         UserInfo memory userInfo = usersTokenBought[msg.sender];
 
         // uint256 specialUserBalance = specialToken.balanceOf(msg.sender);
 
-        require(userInfo.totalSpecialSpent.add(msg.value) >= minBuy, "Less than min buy");
-        require(userInfo.totalSpecialSpent.add(msg.value) <= maxBuy, "More than max buy");
+        require(userInfo.totalSpecialSpent.add(amount) >= minBuy, "Less than min buy");
+        require(userInfo.totalSpecialSpent.add(amount) <= maxBuy, "More than max buy");
         require(
-            msg.value + alreadyRaised <= hardCap,
+            amount + alreadyRaised <= hardCap,
             "Amount buy more than total hardcap"
         );
 
-        uint256 tokenSellAmount = getSellTokenAmount(msg.value);
+        baseToken.approve(address(this), amount);
+        baseToken.transferFrom(msg.sender, address(this), amount);
+        uint256 tokenSellAmount = getSellTokenAmount(amount);
         userInfo.totalToken = userInfo.totalToken.add(tokenSellAmount);
-        userInfo.totalSpecialSpent = userInfo.totalSpecialSpent.add(msg.value);
+        userInfo.totalSpecialSpent = userInfo.totalSpecialSpent.add(amount);
         usersTokenBought[msg.sender] = userInfo;
 
-        alreadyRaised = alreadyRaised.add(msg.value);
+        alreadyRaised = alreadyRaised.add(amount);
     }
 
     function endProcess() public onlyOwner nonReentrant {
@@ -244,9 +253,11 @@ contract BaseITONative is Ownable, ReentrancyGuard {
     }
 
     function withdrawRaised() public onlyOwner withdrawCheck {
-        uint256 balance = address(this).balance;
+        uint256 balance = baseToken.balanceOf(address(this));
         require(balance > 0, "Does not have any balance");
-        payable(msg.sender).transfer(balance);
+        // payable(msg.sender).transfer(balance);
+        baseToken.approve(address(this), balance);
+        baseToken.transferFrom(address(this), msg.sender, balance);
     }
 
 }
