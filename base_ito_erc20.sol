@@ -169,7 +169,7 @@ contract BaseITOERC20 is Ownable, ReentrancyGuard {
             "Amount buy more than total hardcap"
         );
 
-        baseToken.approve(address(this), amount);
+        // baseToken.approve(address(this), amount);
         baseToken.transferFrom(msg.sender, address(this), amount);
         uint256 tokenSellAmount = getSellTokenAmount(amount);
         userInfo.totalToken = userInfo.totalToken.add(tokenSellAmount);
@@ -187,7 +187,9 @@ contract BaseITOERC20 is Ownable, ReentrancyGuard {
         uint256 userSpecialSpent = usersTokenBought[msg.sender].totalSpecialSpent;
         require(userSpent > 0, "Already claimed");
 
-        baseToken.transferFrom(address(this), msg.sender, userSpent.add(userSpecialSpent));
+        // baseToken.approve(msg.sender, userSpent.add(userSpecialSpent));
+        // baseToken.transferFrom(address(this), msg.sender, userSpent.add(userSpecialSpent));
+        baseToken.transfer(msg.sender, userSpent.add(userSpecialSpent));
 
         // payable(msg.sender).transfer(userSpent.add(userSpecialSpent));
 
@@ -229,7 +231,7 @@ contract BaseITOERC20 is Ownable, ReentrancyGuard {
             "Amount buy more than total hardcap"
         );
 
-        baseToken.approve(address(this), amount);
+        // baseToken.approve(address(this), amount);
         baseToken.transferFrom(msg.sender, address(this), amount);
         uint256 tokenSellAmount = getSellTokenAmount(amount);
         userInfo.totalToken = userInfo.totalToken.add(tokenSellAmount);
@@ -256,8 +258,9 @@ contract BaseITOERC20 is Ownable, ReentrancyGuard {
         uint256 balance = baseToken.balanceOf(address(this));
         require(balance > 0, "Does not have any balance");
         // payable(msg.sender).transfer(balance);
-        baseToken.approve(address(this), balance);
-        baseToken.transferFrom(address(this), msg.sender, balance);
+        // baseToken.approve(msg.sender, balance);
+        // baseToken.transferFrom(address(this), msg.sender, balance);
+        baseToken.transfer(msg.sender, balance);
     }
 
 }
