@@ -27,7 +27,6 @@ contract BaseITONative is Ownable, ReentrancyGuard {
     uint256 public specialStartTime;
     uint256 public alreadyRaised;
     uint256 public alreadyClaimed;
-    // Release public released;
 
     mapping(address => UserInfo) public usersTokenBought;
     mapping(address => bool) public whitelisted;
@@ -42,17 +41,6 @@ contract BaseITONative is Ownable, ReentrancyGuard {
         Burn,
         Refund
     }
-
-    // enum Release {
-    //     NOT_SET,
-    //     FAILED,
-    //     RELEASED
-    // }
-
-    // enum Claims {
-    //     FULL,
-    //     FAILED
-    // }
 
     struct DataNative {
         address token;
@@ -213,8 +201,6 @@ contract BaseITONative is Ownable, ReentrancyGuard {
 
         UserInfo memory userInfo = usersTokenBought[msg.sender];
 
-        // uint256 specialUserBalance = specialToken.balanceOf(msg.sender);
-
         require(userInfo.totalSpecialSpent.add(msg.value) >= minBuy, "Less than min buy");
         require(userInfo.totalSpecialSpent.add(msg.value) <= maxBuy, "More than max buy");
         require(
@@ -231,7 +217,6 @@ contract BaseITONative is Ownable, ReentrancyGuard {
     }
 
     function endProcess() public onlyOwner nonReentrant {
-        // require(block.timestamp > endTime && !getHardFilled(), "Raising not end with failed state");
         require(alreadyClaimed == alreadyRaised.mul(presaleRate), "Claim not end");
         if (refundType == RefundType.Burn) {
             token.transfer(address(0), hardCap.mul(presaleRate).sub(alreadyClaimed));

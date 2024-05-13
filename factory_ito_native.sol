@@ -54,10 +54,7 @@ contract ITO is Ownable {
         DataCommon calldata data,
         BaseITONative.RefundType refundType
     ) public {
-        // Deploy a new token 
         address newTokenAddress = factoryERC20.deployNewERC20Token(name, symbol, totalSupply, fund, tax);
-
-        // Create ITO with the newly deployed token
         createNativeITO(newTokenAddress, data, refundType);
     }
 }
