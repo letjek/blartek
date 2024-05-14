@@ -23,6 +23,7 @@ contract BaseITOERC20 is Ownable, ReentrancyGuard {
     uint256 public minBuy;
     uint256 public maxBuy;
     RefundType public refundType;
+    uint256 public specialThreshold;
     uint256 public startTime;
     uint256 public endTime;
     uint256 public specialStartTime;
@@ -57,6 +58,7 @@ contract BaseITOERC20 is Ownable, ReentrancyGuard {
         uint256 minBuy;
         uint256 maxBuy;
         RefundType refundType;
+        uint256 specialThreshold;
     }
 
     modifier onlyActiveWhitelist() {
@@ -83,6 +85,7 @@ contract BaseITOERC20 is Ownable, ReentrancyGuard {
         minBuy = data.minBuy;
         maxBuy = data.maxBuy;
         refundType = data.refundType;
+        specialThreshold = data.specialThreshold;
     }
 
     function setWhiteList(address whitelisted_)
@@ -140,7 +143,7 @@ contract BaseITOERC20 is Ownable, ReentrancyGuard {
 
     function buy(uint256 amount) external nonReentrant {
         if (isWhitelist) {
-            require(whitelisted[msg.sender] || (specialToken != IERC20(address(0)) && specialToken.balanceOf(msg.sender) > 0), "Not whitelisted");
+            require(whitelisted[msg.sender] || (specialToken != IERC20(address(0)) && specialToken.balanceOf(msg.sender) > specialThreshold), "Not whitelisted");
         }
         require(block.timestamp != 0, "Raising period not set");
         require(block.timestamp >= startTime, "Raising period not started yet");
@@ -197,7 +200,7 @@ contract BaseITOERC20 is Ownable, ReentrancyGuard {
     }
 
     function specialBuy(uint256 amount) external nonReentrant {
-        require((specialToken != IERC20(address(0)) && specialToken.balanceOf(msg.sender) > 0), "Not whitelisted");
+        require((specialToken != IERC20(address(0)) && specialToken.balanceOf(msg.sender) > specialThreshold), "Not whitelisted");
         require(specialStartTime != 0, "Raising special period not set");
         require(block.timestamp < startTime, "Special period has ended");
         require(amount > 0, "Please input value");
@@ -205,8 +208,8 @@ contract BaseITOERC20 is Ownable, ReentrancyGuard {
 
         UserInfo memory userInfo = usersTokenBought[msg.sender];
 
-        require(userInfo.totalSpecialSpent.add(amount) >= minBuy, "Less than min buy");
-        require(userInfo.totalSpecialSpent.add(amount) <= maxBuy, "More than max buy");
+        require(userInfo.totalSpecialSpent.add(amount) >= minBuy.sub(specialThreshold), "Less than min buy");
+        require(userInfo.totalSpecialSpent.add(amount) <= maxBuy.add(specialThreshold), "More than max buy");
         require(
             amount + alreadyRaised <= hardCap,
             "Amount buy more than total hardcap"

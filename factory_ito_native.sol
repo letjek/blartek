@@ -22,6 +22,7 @@ contract ITO is Ownable {
         uint256 hardCap;
         uint256 minBuy;
         uint256 maxBuy;
+        uint256 specialThreshold;
     }
 
     constructor(
@@ -41,6 +42,7 @@ contract ITO is Ownable {
         inputData.hardCap = data.hardCap;
         inputData.minBuy = data.minBuy;
         inputData.maxBuy = data.maxBuy;
+        inputData.specialThreshold = data.specialThreshold;
         inputData.refundType = refundType;
         new BaseITONative(inputData);
     }
