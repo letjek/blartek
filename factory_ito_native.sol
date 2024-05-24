@@ -28,7 +28,7 @@ contract ITO is Ownable {
         address initialOwner
     ) Ownable(initialOwner) {}
     
-    function createNativeITO(address token, DataCommon calldata data, BaseITONative.RefundType refundType) public {
+    function createNativeITO(address token, DataCommon calldata data, BaseITONative.RefundType refundType) public returns (address) {
         BaseITONative.DataNative memory inputData;
         inputData.token = token;
         inputData.specialToken = data.specialToken;
@@ -42,7 +42,8 @@ contract ITO is Ownable {
         inputData.maxBuy = data.maxBuy;
         inputData.specialThreshold = data.specialThreshold;
         inputData.refundType = refundType;
-        new BaseITONative(inputData);
+        BaseITONative itoContract_ = new BaseITONative(inputData);
+        return address(itoContract_);
     }
 
     function deployNewTokenAndCreateNativeITO(
@@ -53,8 +54,9 @@ contract ITO is Ownable {
         uint256 tax,
         DataCommon calldata data,
         BaseITONative.RefundType refundType
-    ) public {
+    ) public returns (address, address) {
         address newTokenAddress = factoryERC20.deployNewERC20Token(name, symbol, totalSupply, fund, tax);
-        createNativeITO(newTokenAddress, data, refundType);
+        address itoContractAddress = createNativeITO(newTokenAddress, data, refundType);
+        return (newTokenAddress, itoContractAddress);
     }
 }
