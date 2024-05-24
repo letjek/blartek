@@ -13,7 +13,6 @@ contract BaseITOERC20 is Ownable, ReentrancyGuard {
     IERC20 public baseToken;
     IERC20 public token;
     IERC20 public specialToken;
-    address public currency;
     uint256 public fee;
     bool isAutoList;
     bool public isWhitelist;
@@ -48,7 +47,6 @@ contract BaseITOERC20 is Ownable, ReentrancyGuard {
         address baseToken;
         address token;
         address specialToken;
-        address currency;
         uint256 fee;
         bool isAutoList;
         bool isWhitelist;
@@ -76,7 +74,6 @@ contract BaseITOERC20 is Ownable, ReentrancyGuard {
         baseToken = IERC20(data.baseToken);
         token = IERC20(data.token);
         specialToken = IERC20(data.specialToken);
-        currency = data.currency;
         isAutoList = data.isAutoList;
         isWhitelist = data.isWhitelist;
         presaleRate = data.presaleRate;

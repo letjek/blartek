@@ -13,7 +13,6 @@ contract ITO is Ownable {
 
     struct DataCommon {
         address specialToken;
-        address currency;
         bool isAutoList;
         bool isWhitelist;
         uint256 fee;
@@ -33,7 +32,6 @@ contract ITO is Ownable {
         BaseITONative.DataNative memory inputData;
         inputData.token = token;
         inputData.specialToken = data.specialToken;
-        inputData.currency = data.currency;
         inputData.isAutoList = data.isAutoList;
         inputData.isWhitelist = data.isWhitelist;
         inputData.fee = data.fee;
