@@ -15,7 +15,6 @@ contract ITO is Ownable {
         address specialToken;
         bool isAutoList;
         bool isWhitelist;
-        uint256 fee;
         uint256 presaleRate;
         uint256 softCap;
         uint256 hardCap;
@@ -35,7 +34,6 @@ contract ITO is Ownable {
         inputData.specialToken = data.specialToken;
         inputData.isAutoList = data.isAutoList;
         inputData.isWhitelist = data.isWhitelist;
-        inputData.fee = data.fee;
         inputData.presaleRate = data.presaleRate;
         inputData.softCap = data.softCap;
         inputData.hardCap = data.hardCap;

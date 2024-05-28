@@ -12,7 +12,6 @@ contract BaseITONative is Ownable, ReentrancyGuard {
 
     IERC20 public token;
     IERC20 public specialToken;
-    uint256 public fee;
     bool isAutoList;
     bool public isWhitelist;
     uint256 public presaleRate;
@@ -45,7 +44,6 @@ contract BaseITONative is Ownable, ReentrancyGuard {
     struct DataNative {
         address token;
         address specialToken;
-        uint256 fee;
         bool isAutoList;
         bool isWhitelist;
         uint256 presaleRate;
@@ -70,7 +68,7 @@ contract BaseITONative is Ownable, ReentrancyGuard {
     constructor(DataNative memory data) Ownable(msg.sender) {
         require(data.hardCap.mul(25).div(100) < data.softCap && data.hardCap > data.softCap, "Hardcap must greater than softcap 25%");
         token = IERC20(data.token);
-        specialToken = IERC20(data.specialToken);
+        if (data.specialToken != address(0)) specialToken = IERC20(data.specialToken);
         isAutoList = data.isAutoList;
         isWhitelist = data.isWhitelist;
         presaleRate = data.presaleRate;
@@ -232,6 +230,16 @@ contract BaseITONative is Ownable, ReentrancyGuard {
         uint256 balance = address(this).balance;
         require(balance > 0, "Does not have any balance");
         payable(msg.sender).transfer(balance);
+    }
+
+    function getRaised()
+        public
+        view
+        returns (
+            uint256
+        )
+    {
+        return alreadyRaised;
     }
 
 }

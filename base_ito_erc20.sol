@@ -13,7 +13,6 @@ contract BaseITOERC20 is Ownable, ReentrancyGuard {
     IERC20 public baseToken;
     IERC20 public token;
     IERC20 public specialToken;
-    uint256 public fee;
     bool isAutoList;
     bool public isWhitelist;
     uint256 public presaleRate;
@@ -47,7 +46,6 @@ contract BaseITOERC20 is Ownable, ReentrancyGuard {
         address baseToken;
         address token;
         address specialToken;
-        uint256 fee;
         bool isAutoList;
         bool isWhitelist;
         uint256 presaleRate;
@@ -73,7 +71,7 @@ contract BaseITOERC20 is Ownable, ReentrancyGuard {
         require(data.hardCap.mul(25).div(100) < data.softCap && data.hardCap > data.softCap, "Hardcap must greater than softcap 25%");
         baseToken = IERC20(data.baseToken);
         token = IERC20(data.token);
-        specialToken = IERC20(data.specialToken);
+        if (data.specialToken != address(0)) specialToken = IERC20(data.specialToken);
         isAutoList = data.isAutoList;
         isWhitelist = data.isWhitelist;
         presaleRate = data.presaleRate;
@@ -237,6 +235,16 @@ contract BaseITOERC20 is Ownable, ReentrancyGuard {
         uint256 balance = baseToken.balanceOf(address(this));
         require(balance > 0, "Does not have any balance");
         baseToken.transfer(msg.sender, balance);
+    }
+
+    function getRaised()
+        public
+        view
+        returns (
+            uint256
+        )
+    {
+        return alreadyRaised;
     }
 
 }
