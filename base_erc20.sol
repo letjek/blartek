@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Compatible with OpenZeppelin Contracts ^5.0.0
-pragma solidity ^0.8.20;
+pragma solidity >=0.7.0 <0.9.0;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
@@ -23,7 +23,7 @@ contract BaseERC20 is IERC20, ERC20Burnable, Ownable {
         tax = tax_;
     }
 
-    function mint(address to, uint256 amount) public onlyOwner {
+    function mint(address to, uint256 amount) private {
         _mint(to, amount);
     }
 
@@ -31,14 +31,14 @@ contract BaseERC20 is IERC20, ERC20Burnable, Ownable {
         tax = newTax;
     }
 
-    function _transfer(
+    function _update(
         address sender,
         address recipient,
         uint256 amount
     ) internal override {
         uint256 tax_ = (amount / 100) * tax; // 5% tax
 
-        super._transfer(sender, recipient, amount - tax_);
-        super._transfer(sender, fund, tax_);
+        super._update(sender, recipient, amount - tax_);
+        super._update(sender, fund, tax_);
     }
 }

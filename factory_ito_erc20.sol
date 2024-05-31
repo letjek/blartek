@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Compatible with OpenZeppelin Contracts ^5.0.0
-pragma solidity ^0.8.20;
+pragma solidity >=0.7.0 <0.9.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 
@@ -43,20 +43,5 @@ contract ITO is Ownable {
         inputData.refundType = refundType;
         BaseITOERC20 itoContract_ = new BaseITOERC20(inputData);
         return address(itoContract_);
-    }
-
-    function deployNewTokenAndCreateERC20ITO(
-        string calldata name,
-        string calldata symbol,
-        uint256 totalSupply,
-        address fund,
-        uint256 tax,
-        address baseToken,
-        DataCommon calldata data,
-        BaseITOERC20.RefundType refundType
-    ) public returns (address, address) {
-        address newTokenAddress = factoryERC20.deployNewERC20Token(name, symbol, totalSupply, fund, tax);
-        address itoContractAddress = createERC20ITO(baseToken, newTokenAddress, data, refundType);
-        return (newTokenAddress, itoContractAddress);
     }
 }
