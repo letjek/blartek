@@ -1,15 +1,10 @@
 // SPDX-License-Identifier: MIT
-// Compatible with OpenZeppelin Contracts ^5.0.0
-pragma solidity >=0.7.0 <0.9.0;
+pragma solidity 0.8.20;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
-
-import "./factory_erc20.sol";
 import "./base_ito_native.sol";
 
-contract ITO is Ownable {
-
-    FactoryERC20 internal factoryERC20;
+contract FactoryITONative {
+    event ITOCREATED(address ito);
 
     struct DataCommon {
         address specialToken;
@@ -23,11 +18,9 @@ contract ITO is Ownable {
         uint256 specialThreshold;
     }
 
-    constructor(
-        address initialOwner
-    ) Ownable(initialOwner) {}
+    constructor() {}
     
-    function createNativeITO(address token, DataCommon calldata data, BaseITONative.RefundType refundType) public returns (address) {
+    function createNativeITO(address token, DataCommon calldata data, BaseITONative.RefundType refundType) public {
         BaseITONative.DataNative memory inputData;
         inputData.token = token;
         inputData.specialToken = data.specialToken;
@@ -41,6 +34,6 @@ contract ITO is Ownable {
         inputData.specialThreshold = data.specialThreshold;
         inputData.refundType = refundType;
         BaseITONative itoContract_ = new BaseITONative(inputData);
-        return address(itoContract_);
+        emit ITOCREATED(address(itoContract_));
     }
 }
